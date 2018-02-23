@@ -1,4 +1,6 @@
 module Main where
 
+import Template
+
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = putStrLn $ template "Hello, Haskell!"
