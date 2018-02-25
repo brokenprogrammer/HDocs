@@ -31,3 +31,4 @@ multipleVariables =
             expected = template "Hello Oskar, did you make this for school?"
             result = templateSet (templateSet myTemplate "purpose" "school") "name" "Oskar"
             myTemplate = template "Hello ${name}, did you make this for ${purpose}?"
+

@@ -60,14 +60,19 @@ executable HDocs
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.9 && <4.10
+  build-depends:       base >=4.7 && < 5
                      , text
+                     , gtk3
+                     , glib
+                     , transformers
   
   -- Directories containing source files.
   hs-source-dirs:      src
   
   -- Base language which the package is written in.
   default-language:    Haskell2010
+
+  ghc-options: -Wall -threaded -with-rtsopts=-N
 
 test-suite HDocsTest
   type: exitcode-stdio-1.0
