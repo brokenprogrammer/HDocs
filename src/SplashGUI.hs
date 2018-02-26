@@ -56,12 +56,14 @@ loadNewDialogGlade gladePath = do
 
     entr <- builderGetObject builder castToEntry "NewDialogName"
     combo <- builderGetObject builder castToComboBox "NewDialogTemplate"
-    btnOk <- builderGetObject builder castToButton "NewDialogOk"
-    btnCncl <- builderGetObject builder castToButton "NewDialogCancel"
+
+    -- Initialize buttons to Stock buttons using the ResponseIds provided by gtk2hs.
+    btnOk <- dialogAddButton dialog stockOk ResponseOk
+    btnCncl <- dialogAddButton dialog stockCancel ResponseCancel
 
     return $ NewDialogGUI dialog entr combo btnOk btnCncl
 
-connectDialogGUI :: NewDialogGUI -> IO (ConnectId Button)
+connectDialogGUI :: NewDialogGUI -> IO Int
 connectDialogGUI dialog = do
 
     -- TODO: Add this to data file or other structure. Oskar Mendel 2018-02-26
@@ -70,8 +72,6 @@ connectDialogGUI dialog = do
     comboBoxSetModelText (dialogTemplate dialog)
     comboBoxAppendText (dialogTemplate dialog) $ pack "Project Plan"
     comboBoxAppendText (dialogTemplate dialog) $ pack "Test Plan"
-
-    on (dialogCnl dialog) buttonActivated (widgetHide (dialogWnd dialog))
 
 splashNewAction :: IO ()
 splashNewAction = do
@@ -86,11 +86,9 @@ splashNewAction = do
     name <- (entryGetText (dialogNme dialog))
     template <- (comboBoxGetActiveText (dialogTemplate dialog))
 
-    -- TODO: Any way to use Stock responses of ResponseOk etc.. ?
-    -- Oskar Mendel 2018-02-26
     case result of 
-        ResponseUser 1      -> putStrLn ("ResponseUser " ++ name ++ " " ++ show template ++ show 1)
-        ResponseUser 0      -> putStrLn ("ResponseUser "++ show 0)
+        ResponseOk          -> putStrLn ("Ok: " ++ name ++ " " ++ show template)
+        ResponseCancel      -> putStrLn "Cancel"
         _                   -> error "Invalid Response"
 
     widgetDestroy (dialogWnd dialog)
