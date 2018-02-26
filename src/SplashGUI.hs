@@ -1,7 +1,8 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind#-}
+
 module SplashGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
-import Graphics.UI.Gtk.Builder
 
 data GUI = GUI {
     splashWnd    :: Window,
