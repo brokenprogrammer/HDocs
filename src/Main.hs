@@ -1,6 +1,7 @@
 module Main where
 
 import qualified SplashGUI
+import qualified HDocsGUI
 
 -- TOOD: 1. New knapp
     -- Steps: 
@@ -31,7 +32,8 @@ main = do
     -- Oskar Mendel 2018-02-26
 
     case (fsrt result) of 
-        True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
+        --True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
+        True -> HDocsGUI.main "./data/HDocs.glade"
         False -> putStrLn "NO NEW"
 
     -- case result of 
