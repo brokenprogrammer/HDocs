@@ -114,6 +114,8 @@ fromMaybe Nothing = error ""
 fromMaybe (Just x) = x
 
 -- TODO: Account for when invalid Name or TemplateName is specified.
+-- TODO: Maybe remove data types such as SplashGUIState & NewProjectData
+--      and use type instead.
 --  Oskar Mendel 2018-02-27
 evalState :: SplashGUIState -> (Bool, String, String)
 evalState x = (shouldCreate , projName, templateName)
@@ -140,5 +142,7 @@ main gladePath = do
     widgetShowAll (splashWnd gui)
     mainGUI
 
+    -- TODO: The SplashGUI window should be closed or destroyed here.
+    --      Oskar Mendel 2018-02-27
     evaluatedState <- liftM evalState $ (readIORef state)
     return evaluatedState
