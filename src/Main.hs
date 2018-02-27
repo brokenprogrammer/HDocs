@@ -1,12 +1,5 @@
 module Main where
 
--- import Control.Monad
--- import Control.Monad.IO.Class
--- import Data.IORef
--- import Graphics.UI.Gtk hiding (Action, backspace)
--- import Graphics.UI.Gtk.Glade
--- import Graphics.UI.Gtk.Builder
-
 import qualified SplashGUI
 
 -- TOOD: 1. New knapp
@@ -16,9 +9,34 @@ import qualified SplashGUI
         -- 3. Användare väljer och klickar okej
         -- 4. Visa main fönstret med laddad tempalte.
 
+-- TODO: If these functions should still be used this is not the right module
+--  for them. Oskar Mendel 2018-02-27
+fsrt :: (a, b, c) -> a
+fsrt (x, _, _) = x
+
+scnd :: (a, b, c) -> b
+scnd (_, x, _) = x
+
+thrd :: (a, b, c) -> c
+thrd (_, _, x) = x
+
 main :: IO ()
 main = do
-    SplashGUI.main "./data/Splash.glade"
+    result <- SplashGUI.main "./data/Splash.glade" 
+
+
+-- TODO: Just nu returnerar SplashGUI ett SplashGUIState som en IO ref
+    -- Jag måste ta ut bool från den och kolla om nytt proj ska skapas samt
+    -- ta ut dess proj data och verifiera så det är valid..  HUR ?
+    -- Oskar Mendel 2018-02-26
+
+    case (fsrt result) of 
+        True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
+        False -> putStrLn "NO NEW"
+
+    -- case result of 
+    --     True -> putStrLn "New Project under way.."
+    --     False -> putStrLn "Time to close.."
     -- initGUI
 
     -- -- Load glade file

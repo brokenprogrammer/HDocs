@@ -4,6 +4,8 @@ module SplashGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
 import Data.Text as Text
+import Data.IORef
+import Control.Monad
 
 data SplashGUI = SplashGUI {
     splashWnd    :: Window,
@@ -21,6 +23,16 @@ data NewDialogGUI = NewDialogGUI {
     dialogCnl       :: Button
 }
 
+data NewProjectData = NewProjectData {
+    projectName     :: String,
+    projectTemplate :: Maybe Text
+}
+
+data SplashGUIState = SplashGUIState {
+    shouldCreateProject :: Bool,
+    projectData         :: Maybe NewProjectData
+}
+
 loadSplashGlade :: FilePath -> IO SplashGUI
 loadSplashGlade gladePath = do
     builder <- builderNew
@@ -35,11 +47,11 @@ loadSplashGlade gladePath = do
 
     return $ SplashGUI window btnNew btnEdt btnSet btnQut
 
-connectSplashGUI :: SplashGUI -> IO (ConnectId Button)
-connectSplashGUI gui = do
+connectSplashGUI :: SplashGUI -> (IORef SplashGUIState) -> IO (ConnectId Button)
+connectSplashGUI gui state = do
     on (splashWnd gui) objectDestroy mainQuit
 
-    on (splashNew gui) buttonActivated splashNewAction
+    on (splashNew gui) buttonActivated (splashNewAction state)
     on (splashEdt gui) buttonActivated (putStrLn "Edit")
     on (splashSet gui) buttonActivated (putStrLn "Settings")
     on (splashQut gui) buttonActivated mainQuit
@@ -73,8 +85,8 @@ connectDialogGUI dialog = do
     comboBoxAppendText (dialogTemplate dialog) $ pack "Project Plan"
     comboBoxAppendText (dialogTemplate dialog) $ pack "Test Plan"
 
-splashNewAction :: IO ()
-splashNewAction = do
+splashNewAction :: (IORef SplashGUIState) -> IO ()
+splashNewAction state = do
     dialog <- loadNewDialogGlade "./data/NewDialog.glade"
 
     -- TODO: Oskar Mendel 2018-02-26
@@ -86,22 +98,47 @@ splashNewAction = do
     name <- (entryGetText (dialogNme dialog))
     template <- (comboBoxGetActiveText (dialogTemplate dialog))
 
+    putStrLn name
+
     case result of 
-        ResponseOk          -> putStrLn ("Ok: " ++ name ++ " " ++ show template)
-        ResponseCancel      -> putStrLn "Cancel"
-        _                   -> error "Invalid Response"
+        ResponseOk          -> writeIORef state (SplashGUIState True (Just $ NewProjectData name template))
+        ResponseCancel      -> writeIORef state (SplashGUIState False Nothing)
+        _                   -> writeIORef state (SplashGUIState False Nothing)
 
     widgetDestroy (dialogWnd dialog)
 
-main :: FilePath -> IO ()
+-- TODO: This function is error prone and shouldn't be used in evalState.
+--  Remove and integrate within evalState. Oskar Mendel 2018-02-27
+fromMaybe :: Maybe a -> a
+fromMaybe Nothing = error ""
+fromMaybe (Just x) = x
+
+-- TODO: Account for when invalid Name or TemplateName is specified.
+--  Oskar Mendel 2018-02-27
+evalState :: SplashGUIState -> (Bool, String, String)
+evalState x = (shouldCreate , projName, templateName)
+        where 
+            shouldCreate = (shouldCreateProject x)
+            projData = fromMaybe (projectData x)
+            projName = (projectName projData)
+            templateName = unpack (fromMaybe (projectTemplate projData))
+
+
+main :: FilePath -> IO (Bool, String, String)
 main gladePath = do
     initGUI
+
+    -- State ( Mutable references )
+    state <- newIORef (SplashGUIState False Nothing)
 
     -- Initialize Splash screen GUI from the glade path.
     gui <- loadSplashGlade gladePath
 
     -- Connect the GUI to actionlisteners
-    connectSplashGUI gui
+    connectSplashGUI gui state
 
     widgetShowAll (splashWnd gui)
     mainGUI
+
+    evaluatedState <- liftM evalState $ (readIORef state)
+    return evaluatedState
