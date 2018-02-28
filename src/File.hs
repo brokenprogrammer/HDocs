@@ -1,7 +1,16 @@
 module File where
 
--- TODO: File operations such as: 
---      * write to file
---      * opening file
---      * creating file
--- Oskar Mendel 2018-02-27
+import qualified Data.Text.IO as T (readFile, writeFile)
+import qualified Data.Text    as T
+import Control.Monad
+
+createFile :: FilePath -> IO ()
+createFile name = T.writeFile name $ T.pack ""
+
+saveFile :: FilePath -> T.Text -> IO ()
+saveFile path content = T.writeFile path content
+
+readFile :: FilePath -> IO T.Text
+readFile path = do
+    fileContent <- T.readFile path
+    return $ fileContent
