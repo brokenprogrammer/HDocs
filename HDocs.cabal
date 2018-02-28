@@ -73,6 +73,7 @@ executable HDocs
                         , glade
                         , transformers
                         , aeson
+                        , bytestring
 
     -- Directories containing source files.
     hs-source-dirs:      src

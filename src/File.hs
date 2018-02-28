@@ -1,16 +1,15 @@
 module File where
 
-import qualified Data.Text.IO as T (readFile, writeFile)
-import qualified Data.Text    as T
+import qualified Data.ByteString.Lazy as B
 import Control.Monad
 
 createFile :: FilePath -> IO ()
-createFile name = T.writeFile name $ T.pack ""
+createFile name = B.writeFile name $ B.empty
 
-saveFile :: FilePath -> T.Text -> IO ()
-saveFile path content = T.writeFile path content
+saveFile :: FilePath -> B.ByteString -> IO ()
+saveFile path content = B.writeFile path content
 
-readFile :: FilePath -> IO T.Text
+readFile :: FilePath -> IO B.ByteString
 readFile path = do
-    fileContent <- T.readFile path
+    fileContent <- B.readFile path
     return $ fileContent
