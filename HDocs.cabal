@@ -72,6 +72,7 @@ executable HDocs
                         , glib
                         , glade
                         , transformers
+                        , aeson
 
     -- Directories containing source files.
     hs-source-dirs:      src
