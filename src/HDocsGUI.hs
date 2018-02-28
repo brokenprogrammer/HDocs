@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind#-}
+
 module HDocsGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
