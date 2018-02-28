@@ -1,0 +1,20 @@
+{
+    "Template-Format": {
+        "title":"Test Template",
+        "creator":"${creator}",
+        "author": "${name}",
+        "doc-header":["${inspired-by}", "${inspired-by-name}"],
+        "header":"page header",
+        "footer":"page",
+        "top-margin":20,
+        "right-margin":50,
+        "bottom-margin":25,
+        "left-margin":10,
+        "size":"a4",
+        "subject":"TestTemplate"
+    }, 
+    "Template-Content": [
+        "paragraph", "A short paragraph about something..",
+        "paragraph", "Another short paragraph.."
+    ]
+}

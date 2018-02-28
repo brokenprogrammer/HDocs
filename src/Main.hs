@@ -2,6 +2,9 @@ module Main where
 
 import qualified SplashGUI
 import qualified HDocsGUI
+import qualified File
+import Data.Aeson
+import Template
 
 -- TOOD: 1. New knapp
     -- Steps: 
@@ -23,9 +26,13 @@ thrd (_, _, x) = x
 
 main :: IO ()
 main = do
-    result <- SplashGUI.main "./data/Splash.glade" 
+    jsonDate <- decode <$> File.readFile "./data/TestTemplateSimple.json"
 
-    case (fsrt result) of 
-        --True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
-        True -> HDocsGUI.main "./data/HDocs.glade"
-        False -> putStrLn "NO NEW"
+    print (jsonDate :: Maybe TemplateJSON)
+
+    -- result <- SplashGUI.main "./data/Splash.glade" 
+
+    -- case (fsrt result) of 
+    --     --True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
+    --     True -> HDocsGUI.main "./data/HDocs.glade"
+    --     False -> putStrLn "NO NEW"
