@@ -21,10 +21,21 @@ data TemplateFormat = TemplateFormat
         size        :: Text
     } deriving (Show)
 
+data TemplateSection = TemplateSection
+    {
+        sectionTitle   :: Text,
+        sectionContent :: Text
+    } deriving (Show)
+
+data TemplateContent = TemplateContent
+    {
+        sections    :: [TemplateSection]
+    } deriving (Show)
+
 data TemplateJSON = TemplateJSON
     {
         format  :: TemplateFormat,
-        content :: [Text]
+        content :: TemplateContent
     } deriving (Show)
 
 instance FromJSON TemplateFormat where
@@ -42,13 +53,21 @@ instance FromJSON TemplateFormat where
                        <*> v .: "size"
     parseJSON _ = mzero
 
+instance FromJSON TemplateSection where
+    parseJSON (Object v) =
+        TemplateSection <$> v .: "title"
+                        <*> v .: "content"
+    parseJSON _ = mzero
+
+instance FromJSON TemplateContent where
+    parseJSON (Object v) = TemplateContent <$> v .: "sections"
+    parseJSON _ = mzero
 
 instance FromJSON TemplateJSON where
     parseJSON (Object v) =
         TemplateJSON <$> v .: "Template-Format"
                      <*> v .: "Template-Content"
     parseJSON _ = mzero
-
 
 type Template = Text
 
@@ -63,7 +82,3 @@ templateSet xs var val = replace packedvar packedval xs
     where
         packedvar = pack $ wrapTemplateVar var
         packedval = pack val
-
--- Template: "Massa text skriven av ${name} med mening att ${purpose}."
--- TemplateSet "name" "Oskar Mendel"
--- TemplateSet "purpose" "Förenkla skolan.."

@@ -13,8 +13,16 @@
         "size":"a4",
         "subject":"TestTemplate"
     }, 
-    "Template-Content": [
-        "paragraph", "A short paragraph about something..",
-        "paragraph", "Another short paragraph.."
-    ]
+    "Template-Content": {
+        "sections": [
+            {
+                "title": "Introduction",
+                "content": "A short paragraph about the introduction.." 
+            },
+            {
+                "title": "Purpose",
+                "content": "The contents of the purpose section.."
+            }
+        ]
+    }
 }
