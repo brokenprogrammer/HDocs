@@ -4,7 +4,7 @@ import qualified SplashGUI
 import qualified HDocsGUI
 import qualified File
 import Data.Aeson
-import Template
+import Template (TemplateJSON)
 
 -- TOOD: 1. New knapp
     -- Steps: 
@@ -27,8 +27,9 @@ thrd (_, _, x) = x
 main :: IO ()
 main = do
     jsonDate <- decode <$> File.readFile "./data/TestTemplateSimple.json"
-
-    print (jsonDate :: Maybe TemplateJSON)
+    case jsonDate of
+        (Just jsonDate) -> HDocsGUI.main "./data/HDocs.glade" (jsonDate :: TemplateJSON)
+        Nothing         -> print "Nothing"
 
     -- result <- SplashGUI.main "./data/Splash.glade" 
 
