@@ -5,15 +5,16 @@ module HDocsGUI where
 import Graphics.UI.Gtk hiding (Action, backspace)
 import Data.Text (Text, pack, append)
 import Template
+import TextTags
 
 -- TODO: Add the menu buttons and rethink what other content is needed in the
 --      .glade for this GUI. Oskar Mendel 2018-02-27
 data HDocsGUI = HDocsGUI {
-    hdocsWnd :: Window,
-    hdocsEditor :: TextView,
-    hdocsEditorBuffer :: TextBuffer,
-    hdocsEditorBufferItr :: TextIter,
-    hdocsTag :: TextTag
+    hdocsWnd                :: Window,
+    hdocsEditor             :: TextView,
+    hdocsEditorBuffer       :: TextBuffer,
+    hdocsEditorBufferItr    :: TextIter,
+    hdocsTag                :: TextTag
 }
 
 -- TODO: TextTag for: Bold, Italic, Header. These might also be good to place 
