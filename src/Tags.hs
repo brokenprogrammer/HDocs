@@ -1,18 +1,23 @@
-module TextTags where
+module Tags (getTagTable) where
 
+import Graphics.UI.Gtk.Multiline.TextTagTable
+import Graphics.UI.Gtk.Multiline.TextTag
+import System.Glib.Attributes
 import Data.Text
-import Graphics.UI.Gtk -- .Multiline.TextTag
 import Graphics.Rendering.Pango.Enums
 
+getTagTable :: IO TextTagTable
+getTagTable = do
+    tagTable <- textTagTableNew
+    boldTag <- createBoldTag
+    italicTag <- createItalicTag
+    headerTag <- createHeaderTag
+    
+    textTagTableAdd tagTable boldTag
+    textTagTableAdd tagTable italicTag
+    textTagTableAdd tagTable headerTag
 
--- TODO: Is this a proper way to store the tags or should I rethink this?
---      Oskar Mendel 2018-03-02
-data Tags = Tags
-    {
-        boldTag     :: TextTag,
-        italicTag   :: TextTag,
-        headerTag   :: TextTag
-    }
+    return tagTable
 
 createBoldTag :: IO TextTag
 createBoldTag = do

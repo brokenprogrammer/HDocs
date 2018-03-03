@@ -5,7 +5,7 @@ module HDocsGUI where
 import Graphics.UI.Gtk hiding (Action, backspace)
 import Data.Text (Text, pack, append)
 import Template
-import TextTags
+import Tags
 
 -- TODO: Add the menu buttons and rethink what other content is needed in the
 --      .glade for this GUI. Oskar Mendel 2018-02-27
