@@ -6,18 +6,15 @@ import System.Glib.Attributes
 import Data.Text
 import Graphics.Rendering.Pango.Enums
 
-getTagTable :: IO TextTagTable
-getTagTable = do
-    tagTable <- textTagTableNew
+getTagTable :: TextTagTableClass self => self -> IO ()
+getTagTable self = do
     boldTag <- createBoldTag
     italicTag <- createItalicTag
     headerTag <- createHeaderTag
-    
-    textTagTableAdd tagTable boldTag
-    textTagTableAdd tagTable italicTag
-    textTagTableAdd tagTable headerTag
 
-    return tagTable
+    textTagTableAdd self boldTag
+    textTagTableAdd self italicTag
+    textTagTableAdd self headerTag
 
 createBoldTag :: IO TextTag
 createBoldTag = do
