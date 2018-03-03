@@ -70,7 +70,7 @@ executable HDocs
                         , text
                         , gtk3
                         , glib
-                        , glade
+                        , pango
                         , transformers
                         , aeson
                         , bytestring
