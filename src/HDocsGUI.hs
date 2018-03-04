@@ -3,7 +3,7 @@
 module HDocsGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
-import Data.Text (Text, pack, append)
+import Data.Text (Text, pack, unpack, append)
 import Template
 import Tags
 
@@ -89,12 +89,12 @@ populateHDocsGUI gui jsonTemplate = do
 
     mapM_ (\x -> do
         addToBuffer gui (sectionTitle x) tag
-        addToBuffer gui (sectionContent x) Nothing)
+        addToBuffer gui (sectionContent x) Nothing
+        listStoreAppend (hdocsLinksStore gui) (unpack $ sectionTitle x))
         ((sections (content jsonTemplate)))
 
-    -- TODO: Append the actual links and variables here.
-    --  Oskar Mendel 2018-03-04
-    listStoreAppend (hdocsLinksStore gui) ("Some Link") 
+    -- TODO: Append the actual variables by looping through the entire JSON
+    --  contents.. Oskar Mendel 2018-03-04
     listStoreAppend (hdocsVarsStore gui) ("Some Var") 
 
 main :: FilePath -> TemplateJSON -> IO ()
