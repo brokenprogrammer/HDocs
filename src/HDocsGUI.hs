@@ -25,6 +25,7 @@ loadHDocsGlade gladePath = do
     builder <- builderNew
     builderAddFromFile builder gladePath
 
+    -- Initialize objects from glade
     window <- builderGetObject builder castToWindow "HDocs"
     links <- builderGetObject builder castToTreeView "HDocsLinks"
     linksColumn <- builderGetObject builder castToTreeViewColumn "LinkName"
@@ -34,7 +35,7 @@ loadHDocsGlade gladePath = do
     buffer <- textViewGetBuffer editor
     buffitr <- textBufferGetStartIter buffer
 
-    -- Initialise Text Tags
+    -- Initialize Text Tags
     table <- textBufferGetTagTable buffer
     getTagTable table
 
@@ -46,18 +47,20 @@ loadHDocsGlade gladePath = do
     varsStore <- listStoreNew []
     treeViewSetModel vars varsStore
 
-    -- TODO: Comment about whats going on here.. Oskar Mendel 2018-03-04
-    treeViewSetHeadersVisible links True
-    renderer <- cellRendererTextNew
-    cellLayoutPackStart linksColumn renderer False
-    cellLayoutSetAttributes linksColumn renderer linksStore
-        $ \ind -> [cellText := ind]
-
-    treeViewSetHeadersVisible vars True
+    -- Initialize renderers for the cells in the two models.
+    linksRenderer <- cellRendererTextNew
     varsRenderer <- cellRendererTextNew
-    cellLayoutPackStart varsColumn varsRenderer False
-    cellLayoutSetAttributes varsColumn varsRenderer varsStore
-        $ \ind -> [cellText := ind]
+
+    -- Packs cell renderers into the cell layout.
+    cellLayoutPackStart linksColumn linksRenderer True
+    cellLayoutPackStart varsColumn varsRenderer True
+    
+    -- Helper function that sets the cellText attribute of a cell.
+    let setCellText = \ind -> [cellText := ind]
+
+    -- Specifying how a row in the model defines its attributes on a cell.
+    cellLayoutSetAttributes linksColumn linksRenderer linksStore setCellText
+    cellLayoutSetAttributes varsColumn varsRenderer varsStore setCellText
 
 
     return $ HDocsGUI window links linksStore vars varsStore editor buffer buffitr
