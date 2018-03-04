@@ -174,25 +174,9 @@
             <property name="row_homogeneous">True</property>
             <property name="column_homogeneous">True</property>
             <child>
-              <object class="GtkTextView" id="HDocsEditor">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="wrap_mode">word-char</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkTreeView" id="HDocsLinks">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection" id="treeview-selection7"/>
-                </child>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -209,6 +193,26 @@
               </object>
               <packing>
                 <property name="left_attach">2</property>
+                <property name="top_attach">0</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="HDocsEditorScroll">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTextView" id="HDocsEditor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="wrap_mode">word-char</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
                 <property name="top_attach">0</property>
                 <property name="width">1</property>
                 <property name="height">1</property>
