@@ -5,6 +5,7 @@ module HDocsGUI where
 import Graphics.UI.Gtk hiding (Action, backspace)
 import Data.Text (Text, pack, unpack, append)
 import Data.List
+import Data.List.Split
 import Template
 import Tags
 
@@ -83,7 +84,7 @@ addToBuffer gui target (Just tag) = do
 addToBuffer gui target Nothing = do
     textBufferInsert (hdocsEditorBuffer gui) (hdocsEditorBufferItr gui) (append target $ pack "\n")
 
-populateHDocsGUI :: HDocsGUI -> TemplateJSON -> IO Int
+populateHDocsGUI :: HDocsGUI -> TemplateJSON -> IO ()
 populateHDocsGUI gui jsonTemplate = do
     table <- (textBufferGetTagTable (hdocsEditorBuffer gui))
     tag <- textTagTableLookup table "BoldTag"
@@ -95,20 +96,21 @@ populateHDocsGUI gui jsonTemplate = do
         ((sections (content jsonTemplate)))
 
     -- Stores all the variables read from the JSON into the variables list store.
-    --  TODO: Currently bugged with lists of variables. Oskar Mendel 2018-03-05
     mapM_ (\x -> do
         listStoreAppend (hdocsVarsStore gui) (x)) $ 
-        appendIfNeeded $ 
-        map (break (==','))  $ 
-        map (filter (not . (`elem` "\"${}[]."))) $ 
+        filter (not . null) $
+        splitVarStrings $
+        map (filter (not . (`elem` "\"[]{},."))) $ 
         filter (\x -> isInfixOf "${" x) $ 
         (words . show) jsonTemplate
 
-appendIfNeeded :: [(String, String)] -> [String]
-appendIfNeeded [] = []
-appendIfNeeded (x:xs) = if (length $ snd x) > 1 
-    then fst x : snd x : appendIfNeeded xs 
-    else fst x : appendIfNeeded xs
+-- TODO: Should this function be in this module and could it be made more generalized?
+--  Oskar Mendel 2018-03-05
+splitVarStrings :: [String] -> [String]
+splitVarStrings (x:xs) = if (length $ splitOn "$" x) > 1
+    then splitOn "$" x ++ splitVarStrings xs
+    else x : splitVarStrings xs
+splitVarStrings [] = []
 
 main :: FilePath -> TemplateJSON -> IO ()
 main gladePath jsonTemplate = do
