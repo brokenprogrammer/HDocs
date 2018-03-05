@@ -78,6 +78,7 @@ executable HDocs
                         , transformers
                         , aeson
                         , bytestring
+                        , split
 
     -- Directories containing source files.
     hs-source-dirs:      src

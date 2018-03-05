@@ -3,7 +3,9 @@
 module HDocsGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
-import Data.Text (Text, pack, append)
+import Data.Text (Text, pack, unpack, append)
+import Data.List
+import Data.List.Split
 import Template
 import Tags
 
@@ -11,6 +13,10 @@ import Tags
 --      .glade for this GUI. Oskar Mendel 2018-02-27
 data HDocsGUI = HDocsGUI {
     hdocsWnd                :: Window,
+    hdocsLinks              :: TreeView,
+    hdocsLinksStore         :: ListStore String,
+    hdocsVars               :: TreeView,
+    hdocsVarsStore          :: ListStore String,
     hdocsEditor             :: TextView,
     hdocsEditorBuffer       :: TextBuffer,
     hdocsEditorBufferItr    :: TextIter
@@ -21,16 +27,45 @@ loadHDocsGlade gladePath = do
     builder <- builderNew
     builderAddFromFile builder gladePath
 
+    -- Initialize objects from glade
     window <- builderGetObject builder castToWindow "HDocs"
+    links <- builderGetObject builder castToTreeView "HDocsLinks"
+    linksColumn <- builderGetObject builder castToTreeViewColumn "LinkName"
+    vars <- builderGetObject builder castToTreeView "HDocsVars"
+    varsColumn <- builderGetObject builder castToTreeViewColumn "VarName"
     editor <- builderGetObject builder castToTextView "HDocsEditor"
     buffer <- textViewGetBuffer editor
     buffitr <- textBufferGetStartIter buffer
 
-    -- Initialise Text Tags
+    -- Initialize Text Tags
     table <- textBufferGetTagTable buffer
     getTagTable table
 
-    return $ HDocsGUI window editor buffer buffitr
+    -- Initialize Link model.
+    linksStore <- listStoreNew []
+    treeViewSetModel links linksStore
+
+    -- Initialize Vars model.
+    varsStore <- listStoreNew []
+    treeViewSetModel vars varsStore
+
+    -- Initialize renderers for the cells in the two models.
+    linksRenderer <- cellRendererTextNew
+    varsRenderer <- cellRendererTextNew
+
+    -- Packs cell renderers into the cell layout.
+    cellLayoutPackStart linksColumn linksRenderer True
+    cellLayoutPackStart varsColumn varsRenderer True
+    
+    -- Helper function that sets the cellText attribute of a cell.
+    let setCellText = \ind -> [cellText := ind]
+
+    -- Specifying how a row in the model defines its attributes on a cell.
+    cellLayoutSetAttributes linksColumn linksRenderer linksStore setCellText
+    cellLayoutSetAttributes varsColumn varsRenderer varsStore setCellText
+
+
+    return $ HDocsGUI window links linksStore vars varsStore editor buffer buffitr
 
 connectHDocsGUI :: HDocsGUI -> IO (ConnectId Window)
 connectHDocsGUI gui = do
@@ -56,8 +91,26 @@ populateHDocsGUI gui jsonTemplate = do
 
     mapM_ (\x -> do
         addToBuffer gui (sectionTitle x) tag
-        addToBuffer gui (sectionContent x) Nothing)
+        addToBuffer gui (sectionContent x) Nothing
+        listStoreAppend (hdocsLinksStore gui) (unpack $ sectionTitle x))
         ((sections (content jsonTemplate)))
+
+    -- Stores all the variables read from the JSON into the variables list store.
+    mapM_ (\x -> do
+        listStoreAppend (hdocsVarsStore gui) (x)) $ 
+        filter (not . null) $
+        splitVarStrings $
+        map (filter (not . (`elem` "\"[]{},."))) $ 
+        filter (\x -> isInfixOf "${" x) $ 
+        (words . show) jsonTemplate
+
+-- TODO: Should this function be in this module and could it be made more generalized?
+--  Oskar Mendel 2018-03-05
+splitVarStrings :: [String] -> [String]
+splitVarStrings (x:xs) = if (length $ splitOn "$" x) > 1
+    then splitOn "$" x ++ splitVarStrings xs
+    else x : splitVarStrings xs
+splitVarStrings [] = []
 
 main :: FilePath -> TemplateJSON -> IO ()
 main gladePath jsonTemplate = do

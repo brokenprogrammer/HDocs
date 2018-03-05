@@ -3,7 +3,7 @@
         "title":"Test Template",
         "creator":"${creator}",
         "author": "${name}",
-        "doc-header":["${inspired-by}", "${inspired-by-name}"],
+        "doc-header":["${inspired-by}", "${inspired-by-name}", "${inspired-testing}"],
         "header":"page header",
         "footer":"page",
         "top-margin":20,
