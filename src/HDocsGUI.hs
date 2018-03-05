@@ -19,7 +19,8 @@ data HDocsGUI = HDocsGUI {
     hdocsVarsStore          :: ListStore String,
     hdocsEditor             :: TextView,
     hdocsEditorBuffer       :: TextBuffer,
-    hdocsEditorBufferItr    :: TextIter
+    hdocsEditorBufferItr    :: TextIter,
+    hdocsHelpBar            :: TextView
 }
 
 loadHDocsGlade :: FilePath -> IO HDocsGUI
@@ -36,6 +37,7 @@ loadHDocsGlade gladePath = do
     editor <- builderGetObject builder castToTextView "HDocsEditor"
     buffer <- textViewGetBuffer editor
     buffitr <- textBufferGetStartIter buffer
+    helpbar <- builderGetObject builder castToTextView "HDocsHelpBar"
 
     -- Initialize Text Tags
     table <- textBufferGetTagTable buffer
@@ -64,12 +66,24 @@ loadHDocsGlade gladePath = do
     cellLayoutSetAttributes linksColumn linksRenderer linksStore setCellText
     cellLayoutSetAttributes varsColumn varsRenderer varsStore setCellText
 
+    return $ 
+        HDocsGUI window links linksStore vars varsStore 
+        editor buffer buffitr helpbar
 
-    return $ HDocsGUI window links linksStore vars varsStore editor buffer buffitr
-
-connectHDocsGUI :: HDocsGUI -> IO (ConnectId Window)
+connectHDocsGUI :: HDocsGUI -> IO (ConnectId TreeSelection)
 connectHDocsGUI gui = do
     on (hdocsWnd gui) objectDestroy mainQuit
+
+    linkSelectionModel <- treeViewGetSelection (hdocsLinks gui)
+    treeSelectionSetMode linkSelectionModel SelectionSingle
+    on linkSelectionModel treeSelectionSelectionChanged 
+        (onSelection gui (hdocsLinksStore gui) linkSelectionModel)
+
+    varSelectionModel <- treeViewGetSelection (hdocsVars gui)
+    treeSelectionSetMode varSelectionModel SelectionSingle
+    on varSelectionModel treeSelectionSelectionChanged
+        (onSelection gui (hdocsVarsStore gui) varSelectionModel)
+
 
 -- TODO: This function should be cleaned up somehow.. Oskar Mendel 2018-03-01
 addToBuffer :: HDocsGUI -> Text -> Maybe TextTag -> IO ()
@@ -83,6 +97,20 @@ addToBuffer gui target (Just tag) = do
     textBufferApplyTag (hdocsEditorBuffer gui) tag startItr endItr
 addToBuffer gui target Nothing = do
     textBufferInsert (hdocsEditorBuffer gui) (hdocsEditorBufferItr gui) (append target $ pack "\n")
+
+setHelpBarText :: HDocsGUI -> Text -> IO ()
+setHelpBarText gui text = do 
+    buffer <- textViewGetBuffer (hdocsHelpBar gui)
+    textBufferSetText buffer $ unpack text
+
+-- TODO: Actually show the variable comment for the selected value.
+--  Oskar Mendel 2018-03-05
+onSelection :: HDocsGUI -> ListStore String -> TreeSelection -> IO ()
+onSelection gui list selection = do
+    selected <- treeSelectionGetSelectedRows selection
+    let s = (head . head) selected
+    value <- listStoreGetValue list s
+    setHelpBarText gui $ pack value
 
 populateHDocsGUI :: HDocsGUI -> TemplateJSON -> IO ()
 populateHDocsGUI gui jsonTemplate = do
