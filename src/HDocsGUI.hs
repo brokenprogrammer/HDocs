@@ -4,6 +4,7 @@ module HDocsGUI where
 
 import Graphics.UI.Gtk hiding (Action, backspace)
 import Data.Text (Text, pack, unpack, append)
+import Data.List
 import Template
 import Tags
 
@@ -93,9 +94,21 @@ populateHDocsGUI gui jsonTemplate = do
         listStoreAppend (hdocsLinksStore gui) (unpack $ sectionTitle x))
         ((sections (content jsonTemplate)))
 
-    -- TODO: Append the actual variables by looping through the entire JSON
-    --  contents.. Oskar Mendel 2018-03-04
-    listStoreAppend (hdocsVarsStore gui) ("Some Var") 
+    -- Stores all the variables read from the JSON into the variables list store.
+    --  TODO: Currently bugged with lists of variables. Oskar Mendel 2018-03-05
+    mapM_ (\x -> do
+        listStoreAppend (hdocsVarsStore gui) (x)) $ 
+        appendIfNeeded $ 
+        map (break (==','))  $ 
+        map (filter (not . (`elem` "\"${}[]."))) $ 
+        filter (\x -> isInfixOf "${" x) $ 
+        (words . show) jsonTemplate
+
+appendIfNeeded :: [(String, String)] -> [String]
+appendIfNeeded [] = []
+appendIfNeeded (x:xs) = if (length $ snd x) > 1 
+    then fst x : snd x : appendIfNeeded xs 
+    else fst x : appendIfNeeded xs
 
 main :: FilePath -> TemplateJSON -> IO ()
 main gladePath jsonTemplate = do
