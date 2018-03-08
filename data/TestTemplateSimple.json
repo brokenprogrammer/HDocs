@@ -17,11 +17,13 @@
         "sections": [
             {
                 "title": "Introduction",
-                "content": "A short paragraph about the introduction.." 
+                "content": "A short paragraph about the introduction..",
+                "comment": "This part is the introduction and it will contain help information regarding how to write a proper introduction."
             },
             {
                 "title": "Purpose",
-                "content": "The contents of the purpose section.."
+                "content": "The contents of the purpose section..",
+                "comment": "Another section comment..."
             }
         ]
     }

@@ -19,8 +19,11 @@ data HDocsGUI = HDocsGUI {
     hdocsVarsStore          :: ListStore String,
     hdocsEditor             :: TextView,
     hdocsEditorBuffer       :: TextBuffer,
-    hdocsEditorBufferItr    :: TextIter
-}
+    hdocsEditorBufferItr    :: TextIter,
+    hdocsHelpBar            :: TextView,
+    hdocsLinkComments       :: ListStore String, -- ListStores for the comments
+    hdocsVarComments        :: ListStore String  -- is there a better way to do this?
+}                                                --     Oskar Mendel 2018-03-08
 
 loadHDocsGlade :: FilePath -> IO HDocsGUI
 loadHDocsGlade gladePath = do
@@ -36,6 +39,7 @@ loadHDocsGlade gladePath = do
     editor <- builderGetObject builder castToTextView "HDocsEditor"
     buffer <- textViewGetBuffer editor
     buffitr <- textBufferGetStartIter buffer
+    helpbar <- builderGetObject builder castToTextView "HDocsHelpBar"
 
     -- Initialize Text Tags
     table <- textBufferGetTagTable buffer
@@ -64,12 +68,28 @@ loadHDocsGlade gladePath = do
     cellLayoutSetAttributes linksColumn linksRenderer linksStore setCellText
     cellLayoutSetAttributes varsColumn varsRenderer varsStore setCellText
 
+    -- Create listStores that should hold the comments.
+    linkComments <- listStoreNew []
+    varComments <- listStoreNew []
 
-    return $ HDocsGUI window links linksStore vars varsStore editor buffer buffitr
+    return $ 
+        HDocsGUI window links linksStore vars varsStore 
+        editor buffer buffitr helpbar linkComments varComments
 
-connectHDocsGUI :: HDocsGUI -> IO (ConnectId Window)
+connectHDocsGUI :: HDocsGUI -> IO (ConnectId TreeSelection)
 connectHDocsGUI gui = do
     on (hdocsWnd gui) objectDestroy mainQuit
+
+    linkSelectionModel <- treeViewGetSelection (hdocsLinks gui)
+    treeSelectionSetMode linkSelectionModel SelectionSingle
+    on linkSelectionModel treeSelectionSelectionChanged 
+        (onLinkSelection gui (hdocsLinksStore gui) linkSelectionModel)
+
+    varSelectionModel <- treeViewGetSelection (hdocsVars gui)
+    treeSelectionSetMode varSelectionModel SelectionSingle
+    on varSelectionModel treeSelectionSelectionChanged
+        (onVarSelection gui (hdocsVarsStore gui) varSelectionModel)
+
 
 -- TODO: This function should be cleaned up somehow.. Oskar Mendel 2018-03-01
 addToBuffer :: HDocsGUI -> Text -> Maybe TextTag -> IO ()
@@ -84,6 +104,27 @@ addToBuffer gui target (Just tag) = do
 addToBuffer gui target Nothing = do
     textBufferInsert (hdocsEditorBuffer gui) (hdocsEditorBufferItr gui) (append target $ pack "\n")
 
+setHelpBarText :: HDocsGUI -> Text -> IO ()
+setHelpBarText gui text = do 
+    buffer <- textViewGetBuffer (hdocsHelpBar gui)
+    textBufferSetText buffer $ unpack text
+
+-- TODO: Actually show the variable comment for the selected value.
+--  Oskar Mendel 2018-03-05
+onVarSelection :: HDocsGUI -> ListStore String -> TreeSelection -> IO ()
+onVarSelection gui list selection = do
+    selected <- treeSelectionGetSelectedRows selection
+    let s = (head . head) selected
+    value <- listStoreGetValue list s
+    setHelpBarText gui $ pack value
+
+onLinkSelection :: HDocsGUI -> ListStore String -> TreeSelection -> IO ()
+onLinkSelection gui list selection = do
+    selected <- treeSelectionGetSelectedRows selection
+    let row = (head . head) selected
+    comment <- listStoreGetValue (hdocsLinkComments gui) row
+    setHelpBarText gui $ pack comment
+
 populateHDocsGUI :: HDocsGUI -> TemplateJSON -> IO ()
 populateHDocsGUI gui jsonTemplate = do
     table <- (textBufferGetTagTable (hdocsEditorBuffer gui))
@@ -92,7 +133,8 @@ populateHDocsGUI gui jsonTemplate = do
     mapM_ (\x -> do
         addToBuffer gui (sectionTitle x) tag
         addToBuffer gui (sectionContent x) Nothing
-        listStoreAppend (hdocsLinksStore gui) (unpack $ sectionTitle x))
+        listStoreAppend (hdocsLinksStore gui) (unpack $ sectionTitle x)
+        listStoreAppend (hdocsLinkComments gui) (unpack $ sectionComment x))
         ((sections (content jsonTemplate)))
 
     -- Stores all the variables read from the JSON into the variables list store.

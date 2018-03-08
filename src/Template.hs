@@ -24,7 +24,8 @@ data TemplateFormat = TemplateFormat
 data TemplateSection = TemplateSection
     {
         sectionTitle   :: Text,
-        sectionContent :: Text
+        sectionContent :: Text,
+        sectionComment :: Text
     } deriving (Show)
 
 data TemplateContent = TemplateContent
@@ -57,6 +58,7 @@ instance FromJSON TemplateSection where
     parseJSON (Object v) =
         TemplateSection <$> v .: "title"
                         <*> v .: "content"
+                        <*> v .: "comment"
     parseJSON _ = mzero
 
 instance FromJSON TemplateContent where
