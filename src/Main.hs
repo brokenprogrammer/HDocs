@@ -26,7 +26,7 @@ thrd (_, _, x) = x
 
 main :: IO ()
 main = do
-    jsonDate <- decode <$> File.readFile "./data/TestTemplateSimple.json"
+    jsonDate <- decode <$> File.readFile "./data/ProjectPlan.json"
     case jsonDate of
         (Just jsonDate) -> HDocsGUI.main "./data/HDocs.glade" jsonDate
         Nothing         -> print "Nothing"
