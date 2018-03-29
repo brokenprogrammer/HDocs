@@ -106,6 +106,7 @@ splashNewAction state = do
         _                   -> writeIORef state (SplashGUIState False Nothing)
 
     widgetDestroy (dialogWnd dialog)
+    mainQuit
 
 -- TODO: This function is error prone and shouldn't be used in evalState.
 --  Remove and integrate within evalState. Oskar Mendel 2018-02-27
@@ -142,7 +143,6 @@ main gladePath = do
     widgetShowAll (splashWnd gui)
     mainGUI
 
-    -- TODO: The SplashGUI window should be closed or destroyed here.
-    --      Oskar Mendel 2018-02-27
     evaluatedState <- liftM evalState $ (readIORef state)
+    widgetDestroy (splashWnd gui)
     return evaluatedState
