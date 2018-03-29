@@ -4,7 +4,6 @@ import qualified SplashGUI
 import qualified HDocsGUI
 import qualified File
 import Data.Aeson
---import Template (TemplateJSON)
 
 -- TOOD: 1. New knapp
     -- Steps: 
@@ -24,16 +23,19 @@ scnd (_, x, _) = x
 thrd :: (a, b, c) -> c
 thrd (_, _, x) = x
 
+toDataPath :: String -> String
+toDataPath x = "./data/" ++ (filter (/=' ') x) ++ ".json"
+
 main :: IO ()
 main = do
-    jsonDate <- decode <$> File.readFile "./data/ProjectPlan.json"
+    result <- SplashGUI.main "./data/Splash.glade"
+    jsonDate <- decode <$> File.readFile (toDataPath (thrd result))
     case jsonDate of
         (Just jsonDate) -> HDocsGUI.main "./data/HDocs.glade" jsonDate
         Nothing         -> print "Nothing"
 
-    -- result <- SplashGUI.main "./data/Splash.glade" 
-
-    -- case (fsrt result) of 
-    --     --True -> putStrLn ((scnd result) ++ " " ++ (thrd result))
-    --     True -> HDocsGUI.main "./data/HDocs.glade"
-    --     False -> putStrLn "NO NEW"
+    -- TODO: This is here for debugging purposes. Oskar Mendel 2018-03-29
+    -- jsonDate <- decode <$> File.readFile "./data/ProjectPlan.json"
+    -- case jsonDate of
+    --     (Just jsonDate) -> HDocsGUI.main "./data/HDocs.glade" jsonDate
+    --     Nothing         -> print "Nothing"
